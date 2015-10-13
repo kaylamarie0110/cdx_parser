@@ -1,4 +1,4 @@
-import csv
+import csv, sys
 
 '''HELPER FUNCTIONS'''
 def read_cdx(filename):
@@ -24,14 +24,29 @@ def read_cdx(filename):
             try:
                 cdx_dict[orig_uri].append(uri_metadata)
             except:
-                cdx_dict[orig_uri] = []
-                cdx_dict[orig_uri].append(uri_metadata)
+                if orig_uri[:3] != 'dns' and orig_uri != '-':
+                    cdx_dict[orig_uri] = []
+                    cdx_dict[orig_uri].append(uri_metadata)
         return cdx_dict
 
 '''START SCRIPT'''
-filename = '../cdx_data/index-3580.cdx'
-cdx_dict = read_cdx(filename)
-collection_uris = cdx_dict.keys()
-for uri in collection_uris:
-    num_mementos = len(cdx_dict[uri])
-    print('%s, %d' % (uri, num_mementos))
+def main():
+    num_arg = len(sys.argv)
+    if num_arg < 2:
+        print 'Usage: cdx_parser.py collection_id_1 collection_id_2 ... collection_id_n'
+        return
+    cdx_collections = sys.argv[1:]
+    for collection in cdx_collections:
+        print collection
+        cdx_file = 'C:/_Kayla/phd_research/cdx_data/index-' + collection + '.cdx'
+        cdx_dict = read_cdx(cdx_file)
+        collection_uris = cdx_dict.keys()
+        output_file = 'results/' + collection + '_count.csv'
+        with open(output_file, 'w') as f:
+            f.write('uri num_mementos\n')
+            for uri in collection_uris:
+                num_mementos = len(cdx_dict[uri])
+                f.write('%s %d\n' % (uri, num_mementos))
+
+if __name__ == "__main__":
+    main()
